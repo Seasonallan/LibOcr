@@ -1,0 +1,2 @@
+# LibOcr
+ocr-library
