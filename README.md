@@ -1,2 +1,2 @@
-# LibOcr
-ocr-library
+# LibNet
+net-library
