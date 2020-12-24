@@ -2,22 +2,8 @@
     package="com.turui.android.cameraview">
 
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application>
-        <!-- 暂时不支持自动切换方向，但可以支持横屏或竖屏 -->
-        <activity
-            android:name="com.turui.android.activity.CameraActivity"
-            android:screenOrientation="landscape"
-            android:theme="@style/AppThemeFullScreen" />
-
-        <!-- 暂时不支持自动切换方向，但可以支持横屏或竖屏 -->
-        <activity
-            android:name="com.turui.android.activity.WCameraActivity"
-            android:screenOrientation="landscape"
-            android:theme="@style/AppThemeFullScreen" />
-
         <activity android:name="com.library.ocr.CameraCardActivity"
             android:screenOrientation="landscape"
             android:configChanges="orientation|keyboardHidden|screenSize"

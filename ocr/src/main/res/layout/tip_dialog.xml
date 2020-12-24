@@ -23,8 +23,6 @@
             android:id="@+id/tv_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:text="处理中..."
             android:textColor="#FFFFFF"
             android:textSize="16sp" />
 

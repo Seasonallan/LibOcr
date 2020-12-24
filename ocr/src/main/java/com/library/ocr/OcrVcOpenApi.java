@@ -4,16 +4,16 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.idcard.TFieldID;
 import com.idcard.TRECAPI;
 import com.idcard.TRECAPIImpl;
 import com.idcard.TStatus;
 import com.idcard.TengineID;
-import com.turui.android.activity.WCameraActivity;
+import com.turui.android.activity.CameraActivity;
 import com.turui.engine.EngineConfig;
 import com.turui.engine.InfoCollection;
 
@@ -21,14 +21,14 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+/**
+ * OCR功能模块
+ */
 public class OcrVcOpenApi {
 
 
-    public TRECAPI engine;//建议写成全局========================<<<<<<<<<<<<<<<<<<<<<这里
-
-
+    public TRECAPI engine;
     private volatile static OcrVcOpenApi sInstance;
-
 
     private OcrVcOpenApi() {
         if (sInstance != null) {
@@ -47,7 +47,62 @@ public class OcrVcOpenApi {
         return sInstance;
     }
 
-    public String startUp(Context context) {
+
+    IActivityInterrupt iActivityInterrupt;
+
+    public OcrVcOpenApi addInterrupt(IActivityInterrupt iActivityInterrupt) {
+        this.iActivityInterrupt = iActivityInterrupt;
+        return this;
+    }
+
+    public void preExecute(AppCompatActivity activity) {
+        if (iActivityInterrupt != null) {
+            iActivityInterrupt.onCreate(activity);
+        }
+    }
+
+    /**
+     * 监听器
+     */
+    public interface IActivityInterrupt {
+        void onCreate(AppCompatActivity activity);
+    }
+
+    /**
+     * 监听器
+     */
+    public interface IOCRCallback {
+        /**
+         * 正面回调
+         *
+         * @param filePath
+         * @param filePathHead
+         * @param code
+         * @param name
+         */
+        void onOcrPositiveRecognized(String filePath, String filePathHead, String code, String name);
+
+        /**
+         * 背面回调
+         *
+         * @param filePath
+         * @param issue
+         * @param period
+         */
+        void onOcrBackRecognized(String filePath, String issue, String period);
+    }
+
+    private IOCRCallback iOcrCallback;
+
+    /**
+     * 启动引擎
+     *
+     * @param context
+     * @param iOcrCallback
+     * @return
+     */
+    public String startEngine(Context context, IOCRCallback iOcrCallback) {
+        this.iOcrCallback = iOcrCallback;
         isEngineStart = false;
         // 如果这里发生异常请检查libs下是不是有对应的 .so 文件
         // 如果这里发生异常请检查libs下是不是有对应的 .so 文件
@@ -59,7 +114,7 @@ public class OcrVcOpenApi {
         } catch (UnsatisfiedLinkError e) {
             e.printStackTrace();
             return "无法加载so文件";
-        } catch (NoClassDefFoundError e){
+        } catch (NoClassDefFoundError e) {
             e.printStackTrace();
             return "无法加载so文件";
         }
@@ -87,52 +142,62 @@ public class OcrVcOpenApi {
     }
 
     private boolean isEngineStart;
-    public boolean isEngineStart(){
+
+    /**
+     * 引擎是否已经启动
+     *
+     * @return
+     */
+    public boolean isEngineStart() {
         return isEngineStart;
     }
 
-    public TengineID getType(String type) {
-        switch (type) {
-            //并非所有证件都支持扫描，目前只有身份证、银行卡、车牌支持扫描与拍照，其实证件为拍照
-            case "身份证":
-                //身份证设置类型时不区分正反面，引擎自动识别。类型统一使用TengineID.TIDCARD2
-                return TengineID.TIDCARD2;
-            case "银行卡":
-                return TengineID.TIDBANK;
-            case "车牌":
-                return TengineID.TIDLPR;
-            case "驾驶证":
-                return TengineID.TIDJSZCARD;
-            case "行驶证":
-                return TengineID.TIDXSZCARD;
-            case "营业执照":
-                return TengineID.TIDBIZLIC;
-            case "火车票":
-                return TengineID.TIDTICKET;
-            case "社保卡":
-                return TengineID.TIDSSCCARD;
-            case "护照":
-                return TengineID.TIDPASSPORT;
-            case "港澳通行证":
-                return TengineID.TIDEEPHK;
-        }
-        return TengineID.TIDCARD2;
-    }
 
+    /**
+     * 释放资源
+     */
     public void release() {
         if (engine != null) {
             engine.TR_ClearUP();//释放内存===============<<<<<<<<<<<<<<<<<<<<<这里
         }
+        iActivityInterrupt = null;
+        iOcrCallback = null;
+        if (CameraActivity.takeBitmap != null && !CameraActivity.takeBitmap.isRecycled()) {
+            CameraActivity.takeBitmap.recycle();
+        }
+        if (CameraActivity.smallBitmap != null && !CameraActivity.smallBitmap.isRecycled()) {
+            CameraActivity.smallBitmap.recycle();
+        }
+        CameraActivity.takeBitmap = null;
+        CameraActivity.smallBitmap = null;
     }
 
-    public String openCamera(Activity activity, int code) {
+    public boolean isOcr = true;
+    public boolean isPositive = true;
+
+    /**
+     * 打开摄像头
+     *
+     * @param activity
+     * @param ocr        是否需要OCR识别
+     * @param isPositive 是否是正面
+     * @return
+     */
+    public String openCamera(Activity activity, boolean ocr, boolean isPositive) {
         if (!isEngineStart) {
             return "引擎启动异常";
         }
+        this.isOcr = ocr;
+        this.isPositive = isPositive;
         //Intent intent = new Intent(activity, WCameraActivity.class);
         Intent intent = new Intent(activity, CameraCardActivity.class);
-        EngineConfig config = new EngineConfig(engine, getType("身份证"));
-        config.setEngingModeType(EngineConfig.EngingModeType.SCAN);//扫描模式
+        EngineConfig config = new EngineConfig(engine, TengineID.TIDCARD2);
+        if (ocr) {
+            config.setEngingModeType(EngineConfig.EngingModeType.SCAN);//扫描模式
+        } else {
+            config.setEngingModeType(EngineConfig.EngingModeType.TAKE);//扫描模式
+        }
+
         config.setShowModeChange(true);//是否显示模式切换按钮
         config.setbMattingOfIdcard(true);//正常下不用，引擎内部裁切外部无法调整，跟so挂钩，安卓层无法调整
 //                config.setbMattingOfIdcard(true, 209);//当使用.setbMattingOfIdcard(true)无法输出图片时尝试使用这个方法，第二个参数可能要修改
@@ -151,7 +216,7 @@ public class OcrVcOpenApi {
         config.setLogcatSaveToFile(false);//日志是否保存到文件
 //                config.setLogSaveToFilePath(path);//日志保存路径，自行确认路径与权限
         intent.putExtra(EngineConfig.class.getSimpleName(), config);//必须有
-        activity.startActivityForResult(intent, code);
+        activity.startActivity(intent);
 
         return null;
     }
@@ -167,11 +232,7 @@ public class OcrVcOpenApi {
      * 文本类型 : infoCollection.getFieldString(TFieldID.ISSUE);//签发机关
      * 文本类型 : infoCollection.getFieldString(TFieldID.PERIOD);//有效期限
      */
-    public String code, name;
-    public String issue, period;
-    public Bitmap copySmallBitmap, copyTakeBitmap;
-
-    public boolean isPeriodExpired() {
+    public boolean isPeriodExpired(String period) {
         try {
             String endTime = period.split("-")[1];
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd", Locale.getDefault());
@@ -187,73 +248,41 @@ public class OcrVcOpenApi {
      *
      * @return
      */
-    public boolean isBackRight() {
+    public boolean isBackRight(String issue, String period) {
         return !TextUtils.isEmpty(issue) && !TextUtils.isEmpty(period);
     }
 
-    public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
-        if ((requestCode == 11 || requestCode == 22) && resultCode == 601 && data != null) {
-            Bundle bundle = data.getExtras();
-            InfoCollection info = (InfoCollection) bundle.getSerializable("info");
-
-            //演示显示全部信息，开发过程可以获取单个信息
-            //使用TFieldID枚举即可
-            //info.getFieldString(TFieldID.NAME);// 姓名
-            //info.getFieldString(TFieldID.SEX);// 性别
-            //info.getFieldString(TFieldID.ISSUE);// 签发机关
-            // ... ...
-            if (requestCode == 11){
-                code = "";
-                name = "";
-            }else{
-                issue = "";
-                period = "";
-            }
-            copySmallBitmap = null;
-            copyTakeBitmap = null;
-            //图片内部没有进行回收，获取图片后请自行保存，以免出现问题
-            //图片内部没有进行回收，获取图片后请自行保存，以免出现问题
-            if (null != info) {
-                if (info.getCode() == 200) {
-                    Log.d("OcrCvDemo", info.getAllinfo());
-                    if (requestCode == 11){
-                        code = info.getFieldString(TFieldID.NUM);// 证件号码
-                        name = info.getFieldString(TFieldID.NAME);// 姓名
-                    }else{
-                        issue = info.getFieldString(TFieldID.ISSUE);// 签发机关
-                        period = info.getFieldString(TFieldID.PERIOD);// 有效期
-                    }
-                } else {
-                }
+    public void onTakeResult(String takeFilePath) {
+        if (iOcrCallback != null) {
+            if (isPositive) {
+                iOcrCallback.onOcrPositiveRecognized(takeFilePath, null
+                        , null, null);
             } else {
-                Log.d("OcrCvDemo", "info is null");
+                iOcrCallback.onOcrBackRecognized(takeFilePath, null, null);
             }
-            //获取图片
-            Bitmap.Config config = Bitmap.Config.RGB_565;
-            //全图
-            if (WCameraActivity.takeBitmap != null && !WCameraActivity.takeBitmap.isRecycled()) {
-                copyTakeBitmap = WCameraActivity.takeBitmap.copy(config, false);
-            }
-            //身份证头像与银行卡小图，其它证件没有这个
-            //有识别信息后才去获取头像或小图，否则读取的图片没有意义
-            if (WCameraActivity.smallBitmap != null && !WCameraActivity.smallBitmap.isRecycled()) {
-                copySmallBitmap = WCameraActivity.smallBitmap.copy(config, false);
-            }
-            //如果开启保存到私有目录也可以用下面方式获取
-            //config.setSaveToData(true);//保存到私有目录
-            //如果开启保存到私有目录也可以用下面方式获取
-//            Bitmap bitmap = WCameraActivity.getBitmapFromData(this, EngineConfig.TAKE_BITMAP_PNG);
-//            Bitmap small = WCameraActivity.getBitmapFromData(this, EngineConfig.SMALL_BITMAP_PNG);
-//            if (bitmap != null) {
-//                copyTakeBitmap = bitmap.copy(config, false);
-//            }
-//            if (small != null) {
-//                copySmallBitmap = small.copy(config, false);
-//            }
-            return true;
         }
+    }
 
-        return false;
+    public void onActivityResult(InfoCollection info, String takeFilePath, String smallFilePath) {
+        if (iOcrCallback != null) {
+            if (isPositive) {
+                String code = "";
+                String name = "";
+                if (info != null) {
+                    code = info.getFieldString(TFieldID.NUM);// 证件号码
+                    name = info.getFieldString(TFieldID.NAME);// 姓名
+                }
+                iOcrCallback.onOcrPositiveRecognized(takeFilePath, smallFilePath, code, name);
+            } else {
+                String issue = "";
+                String period = "";
+                if (info != null) {
+                    issue = info.getFieldString(TFieldID.ISSUE);// 签发机关
+                    period = info.getFieldString(TFieldID.PERIOD);// 有效期
+                }
+                iOcrCallback.onOcrBackRecognized(takeFilePath, issue, period);
+            }
+        }
     }
 
 

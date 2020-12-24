@@ -21,14 +21,16 @@
         app:tr_facing="back"
         app:tr_flash="off"
         app:tr_maskColor="#AAAAAAAA"
-        app:tr_maximumPreviewWidth="3000"
-        app:tr_maximumWidth="3000"
+        app:tr_maximumPreviewWidth="2500"
+        app:tr_maximumWidth="2500"
         app:tr_rectCenterXPercent="50"
         app:tr_rectCenterYPercent="45"
         app:tr_rectLandscapeHeightPercentByWidth="63"
         app:tr_rectLandscapeWidthPercent="65"
         app:tr_rectPortraitHeightPercentByWidth="63"
-        app:tr_rectPortraitWidthPercent="85" />
+        app:tr_rectPortraitWidthPercent="85"
+        app:tr_showScanLine="false"
+        app:tr_scanLineColor="#EE55FF55"/>
 
     <View
         android:id="@+id/shutter_effect"
@@ -40,11 +42,14 @@
 
     <ImageView
         android:id="@+id/shutter"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="16dp"
+        android:layout_width="60dip"
+        android:layout_height="60dip"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="0dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="0dp"
         android:background="@drawable/ic_green_background"
         android:clickable="true"
         android:padding="10dp"
@@ -56,7 +61,7 @@
         android:layout_height="40dp"
         android:layout_alignParentRight="true"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="false"
+        android:layout_centerVertical="false"
         android:layout_marginRight="16dp"
         android:layout_marginBottom="16dp"
         android:background="@drawable/ic_gray_background"

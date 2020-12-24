@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="accent">#4CAF50</color>
-    <color name="primary">#3F51B5</color>
-    <color name="primaryDark">#303F9F</color>
-    <color name="primaryText">#212121</color>
-    <color name="secondaryText">#727272</color>
+
     <declare-styleable name="CameraView">
         <attr name="tr_maximumWidth" format="integer" />
         <attr name="tr_maximumPreviewWidth" format="integer" />
@@ -46,21 +42,12 @@
         <attr name="tr_scanLineColor" format="color|reference" />
     </declare-styleable>
 
-    <style name="AppThemeFullScreen" parent="Theme.Demo">
+    <style name="AppThemeFullScreen" parent="Theme.AppCompat.NoActionBar">
         <item name="android:windowNoTitle">true</item> 
         <item name="android:windowFullscreen">true</item>   
         <item name="android:windowIsTranslucent">false</item> 
     </style>
 
-    <style name="Theme.Demo" parent="Theme.AppCompat.NoActionBar">
-        <!--    <style name="Theme.Demo" parent="@android:style/Theme.Black.NoTitleBar.Fullscreen">-->
-        <!-- Customize your theme here. -->
-        <!--        <item name="colorPrimary">@color/primary</item>-->
-        <!--        <item name="colorPrimaryDark">@color/primaryDark</item>-->
-        <!--        <item name="colorAccent">@color/accent</item>-->
-        <item name="android:textColorPrimary">@color/primaryText</item>
-        <item name="android:textColorSecondary">@color/secondaryText</item>
-    </style>
 
     <style name="Widget.CameraView" parent="android:Widget">
         <item name="android:adjustViewBounds">false</item>
