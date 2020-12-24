@@ -6,6 +6,9 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.text.TextUtils;
 
+
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.library.ocr.OcrVcOpenApi;
 
 import java.text.SimpleDateFormat;
@@ -14,14 +17,57 @@ import java.util.Locale;
 
 public class OcrCvBridge {
 
+//    public static OcrCvBridge getInstance() {
+//        if (sInstance == null) {
+//            synchronized (OcrCvBridge.class) {
+//                if (sInstance == null) {
+//                    sInstance = new OcrCvBridge();
+//                }
+//            }
+//        }
+//        return sInstance;
+//    }
+//    public OcrCvBridge addInterrupt(IOcrInterrupt iOcrInterrupt) {
+//        return this;
+//    }
+//    public interface IOcrInterrupt {
+//        void onCreate(AppCompatActivity activity);
+//    }
+//    public interface IOcrListener {
+//        void onOcrPositiveRecognized(String filePath, String filePathHead, String code, String name);
+//        void onOcrBackRecognized(String filePath, String issue, String period);
+//    }
+
+
+        /**
+     * 移除OCR模块，注释这边即可
+     * @return
+     */
+    public static OcrVcOpenApi getInstance() {
+        return OcrVcOpenApi.getInstance();
+    }
+    public OcrVcOpenApi addInterrupt(IOcrInterrupt iOcrInterrupt) {
+        return OcrVcOpenApi.getInstance().addInterrupt(iOcrInterrupt);
+    }
+
+    public interface IOcrListener extends OcrVcOpenApi.IOCRCallback {
+    }
+
+    public interface IOcrInterrupt extends OcrVcOpenApi.IActivityInterrupt {
+    }
+
+
 
     private volatile static OcrCvBridge sInstance;
-
 
     private OcrCvBridge() {
         if (sInstance != null) {
             throw new RuntimeException("请注意使用规范");
         }
+    }
+
+    public String startEngine(MainActivity mainActivity, IOcrListener iOcrListener) {
+        return null;
     }
 
     public String startUp(Context context) {
@@ -34,16 +80,8 @@ public class OcrCvBridge {
     public void release() {
     }
 
-    public String openCamera(Activity activity, int code) {
-        return null;
-    }
 
-
-    public String code, name;
-    public String issue, period;
-    public Bitmap copySmallBitmap, copyTakeBitmap;
-
-    public boolean isPeriodExpired() {
+    public boolean isPeriodExpired(String period) {
         try {
             String endTime = period.split("-")[1];
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd", Locale.getDefault());
@@ -59,7 +97,7 @@ public class OcrCvBridge {
      *
      * @return
      */
-    public boolean isBackRight() {
+    public boolean isBackRight(String issue, String period) {
         return !TextUtils.isEmpty(issue) && !TextUtils.isEmpty(period);
     }
 
@@ -68,19 +106,12 @@ public class OcrCvBridge {
     }
 
 
-//    public static OcrVcOpenApiBridge getInstance() {
-//        if (sInstance == null) {
-//            synchronized (OcrVcOpenApiBridge.class) {
-//                if (sInstance == null) {
-//                    sInstance = new OcrVcOpenApiBridge();
-//                }
-//            }
-//        }
-//        return sInstance;
-//    }
+    public boolean isEngineStart() {
+        return isEngineStart;
+    }
 
-    public static OcrVcOpenApi getInstance() {
-        return OcrVcOpenApi.getInstance();
+    public void openCamera(MainActivity mainActivity, boolean b, boolean b1) {
+
     }
 
 }

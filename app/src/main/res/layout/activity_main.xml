@@ -11,13 +11,14 @@
         android:padding="27dp">
 
 
-        <Button
-            android:id="@+id/list_btn_load"
+        <TextView
+            android:id="@+id/result_tv_status"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:padding="16dp"
-            android:text="加载库" />
+            android:layout_marginTop="15dp"
+            android:gravity="center"
+            android:text="引擎开始加载" />
+
 
         <Button
             android:id="@+id/list_btn_positive"
