@@ -80,7 +80,7 @@ public class OcrVcOpenApi {
          * @param code
          * @param name
          */
-        void onOcrPositiveRecognized(String filePath, String filePathHead, String code, String name);
+        void onOcrPositiveRecognized(String filePath, String filePathHead, String code, String name, String sex, String birth);
 
         /**
          * 背面回调
@@ -256,7 +256,7 @@ public class OcrVcOpenApi {
         if (iOcrCallback != null) {
             if (isPositive) {
                 iOcrCallback.onOcrPositiveRecognized(takeFilePath, null
-                        , null, null);
+                        , null, null, null, null);
             } else {
                 iOcrCallback.onOcrBackRecognized(takeFilePath, null, null);
             }
@@ -268,11 +268,15 @@ public class OcrVcOpenApi {
             if (isPositive) {
                 String code = "";
                 String name = "";
+                String sex = "";
+                String birth = "";
                 if (info != null) {
                     code = info.getFieldString(TFieldID.NUM);// 证件号码
                     name = info.getFieldString(TFieldID.NAME);// 姓名
+                    sex = info.getFieldString(TFieldID.SEX);// 性能
+                    birth = info.getFieldString(TFieldID.BIRTHDAY);// 姓名
                 }
-                iOcrCallback.onOcrPositiveRecognized(takeFilePath, smallFilePath, code, name);
+                iOcrCallback.onOcrPositiveRecognized(takeFilePath, smallFilePath, code, name, sex, birth);
             } else {
                 String issue = "";
                 String period = "";
